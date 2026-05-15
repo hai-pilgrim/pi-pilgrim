@@ -3,8 +3,12 @@ import sessionTheme from "./session-theme.js";
 import pushGuard from "./push-guard.js";
 import autoCommit from "./auto-commit.js";
 import pilgrimPresets from "./pilgrim-presets.js";
+import pilgrimFooter from "./pilgrim-footer.js";
 
 export default function (pi: ExtensionAPI) {
+	// PIlgrim footer: model, thinking, context %, branch
+	pilgrimFooter(pi);
+
 	// Each session gets its own theme (auto-assigned or persisted)
 	sessionTheme(pi);
 
