@@ -6,7 +6,7 @@
  *        npx pilgrim [options] [prompt]
  */
 
-import { execa } from "execa";
+import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -19,15 +19,8 @@ const args = process.argv.slice(2);
 // Build pi command with our extension pre-loaded
 const piArgs = ["pi", "--extension", extensionPath, ...args];
 
-// Also add our custom theme/skill/prompt paths via env
-process.env.PI_CUSTOM_PATHS = JSON.stringify({
-	themes: [join(root, "src", "themes")],
-	skills: [join(root, "src", "skills")],
-	prompts: [join(root, "src", "prompts")],
-});
-
-// Run pi
-const child = execa("npx", piArgs, {
+// Run pi directly via npx
+const child = spawn("npx", piArgs, {
 	stdio: "inherit",
 	cwd: process.cwd(),
 	env: process.env,

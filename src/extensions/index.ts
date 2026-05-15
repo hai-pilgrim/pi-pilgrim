@@ -4,6 +4,7 @@ import pushGuard from "./push-guard.js";
 import autoCommit from "./auto-commit.js";
 import pilgrimPresets from "./pilgrim-presets.js";
 import pilgrimFooter from "./pilgrim-footer.js";
+import gitCheckpoint from "./git-checkpoint.js";
 
 export default function (pi: ExtensionAPI) {
 	// PIlgrim footer: model, thinking, context %, branch
@@ -14,6 +15,9 @@ export default function (pi: ExtensionAPI) {
 
 	// Warn when leaving a repo with unpushed commits
 	pushGuard(pi);
+
+	// Git stash checkpoint at the start of each turn
+	gitCheckpoint(pi);
 
 	// Auto-commit changes at the end of each turn
 	autoCommit(pi);
