@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+/**
+ * PIlgrim - A customized harness for the pi coding agent
+ *
+ * Usage: pilgrim [options] [prompt]
+ *        npx pilgrim [options] [prompt]
+ */
+
+import { execa } from "execa";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = join(__dirname, "..");
+const extensionPath = join(root, "src", "extensions", "index.ts");
+
+const args = process.argv.slice(2);
+
+// Build pi command with our extension pre-loaded
+const piArgs = ["pi", "--extension", extensionPath, ...args];
+
+// Also add our custom theme/skill/prompt paths via env
+process.env.PI_CUSTOM_PATHS = JSON.stringify({
+	themes: [join(root, "src", "themes")],
+	skills: [join(root, "src", "skills")],
+	prompts: [join(root, "src", "prompts")],
+});
+
+// Run pi
+const child = execa("npx", piArgs, {
+	stdio: "inherit",
+	cwd: process.cwd(),
+	env: process.env,
+});
+
+child.on("exit", (code) => {
+	process.exit(code ?? 0);
+});

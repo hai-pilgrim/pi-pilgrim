@@ -1,0 +1,36 @@
+{
+  "name": "pilgrim",
+  "version": "0.1.0",
+  "description": "A customized harness for the pi coding agent",
+  "type": "module",
+  "bin": {
+    "pilgrim": "./bin/pilgrim"
+  },
+  "scripts": {
+    "dev": "pi --extension ./src/extensions/index.ts",
+    "pilgrim": "pi --extension ./src/extensions/index.ts"
+  },
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "^0.74.0",
+    "@earendil-works/pi-tui": "^0.74.0",
+    "@earendil-works/pi-ai": "^0.74.0",
+    "typebox": "^0.34.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "pi": {
+    "extensions": [
+      "./src/extensions/index.ts"
+    ],
+    "themes": [
+      "./src/themes"
+    ],
+    "skills": [
+      "./src/skills"
+    ],
+    "prompts": [
+      "./src/prompts"
+    ]
+  }
+}
