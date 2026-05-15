@@ -1,0 +1,21 @@
+{
+  "theme": "pilgrim-dark",
+  "defaultProvider": "openrouter",
+  "defaultModel": "anthropic/claude-sonnet-4",
+  "defaultThinkingLevel": "medium",
+  "extensions": [
+    "/path/to/pi-pilgrim/src/extensions/index.ts"
+  ],
+  "themes": [
+    "/path/to/pi-pilgrim/src/themes"
+  ],
+  "presets": [
+    "/path/to/pi-pilgrim/src/presets"
+  ],
+  "skills": [
+    "/path/to/pi-pilgrim/src/skills"
+  ],
+  "prompts": [
+    "/path/to/pi-pilgrim/src/prompts"
+  ]
+}

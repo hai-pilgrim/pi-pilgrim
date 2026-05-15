@@ -1,0 +1,9 @@
+{
+  "theme": "pilgrim-dark",
+  "extensions": [
+    "../src/extensions/index.ts"
+  ],
+  "presets": [
+    "../src/presets"
+  ]
+}
