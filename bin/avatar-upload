@@ -1,0 +1,123 @@
+#!/usr/bin/env node
+/**
+ * Upload PIlgrim avatar to GitHub.
+ * Usage: node bin/avatar-upload
+ *
+ * Requires: playwright (npm install playwright), chromium
+ * Requires: GitHub credentials in ~/.secrets
+ * Requires: ProtonMail access for verification code
+ */
+
+const { chromium } = require('playwright');
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
+// Load credentials from ~/.secrets
+const secrets = readFileSync(join(process.env.HOME, '.secrets'), 'utf8');
+const get = (key) => {
+    const m = secrets.match(new RegExp(`${key}=(.+)`));
+    return m ? m[1].trim().replace(/^['"]|['"]$/g, '') : null;
+};
+
+const GH_USER = get('AI_PILGRIM_UNAME') || 'hai-pilgrim';
+const GH_PASS = get('AI_PILGRIM_PW');
+const PROTON_USER = get('AI_PROTON_MAIL');
+const PROTON_PASS = get('AI_PILGRIM_PW');
+const AVATAR_PATH = join(__dirname, '..', 'avatar.png');
+
+async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+(async () => {
+    if (!GH_PASS || !PROTON_USER) {
+        console.error('Missing credentials in ~/.secrets');
+        process.exit(1);
+    }
+
+    const browser = await chromium.launch({ headless: false, args: ['--no-sandbox'] });
+    try {
+        // GitHub login
+        const gh = await browser.newPage();
+        await gh.goto('https://github.com/login', { waitUntil: 'domcontentloaded' });
+        await sleep(3000);
+        await gh.fill('#login_field', GH_USER);
+        await gh.fill('#password', GH_PASS);
+
+        await Promise.all([
+            gh.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => null),
+            gh.click('input[name="commit"]')
+        ]);
+        await sleep(4000);
+
+        if (!gh.url().includes('verified-device')) {
+            console.log('Login failed or rate limited:', gh.url());
+            await browser.close();
+            return;
+        }
+
+        // Get verification code from ProtonMail
+        const proton = await browser.newPage();
+        await proton.goto('https://mail.proton.me/u/0/inbox', { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await sleep(6000);
+
+        if (proton.url().includes('login')) {
+            await proton.fill('#username', PROTON_USER);
+            await proton.fill('#password', PROTON_PASS);
+            await proton.click('button[type="submit"]');
+            await sleep(10000);
+            await proton.goto('https://mail.proton.me/u/0/inbox', { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await sleep(6000);
+        }
+
+        const mc = await proton.$('text=Maybe later');
+        if (mc) { await mc.click(); await sleep(500); }
+        await sleep(3000);
+
+        const email = await proton.$('text=/\\[GitHub\\] Please verify your device/') || await proton.$('text=Please verify your device');
+        if (!email) { console.log('No email found'); await browser.close(); return; }
+
+        await email.click();
+        await sleep(2000);
+
+        const code = await proton.evaluate(() => {
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            while (node = walker.nextNode()) {
+                const match = node.textContent.match(/Verification code[:\s]*(\d{6})/i);
+                if (match) return match[1];
+            }
+            const m = (document.body?.innerText || '').match(/\b(\d{6})\b/);
+            return m ? m[1] : null;
+        });
+
+        console.log('Code:', code);
+        if (!code) { console.log('No code'); await browser.close(); return; }
+
+        // Enter code
+        await gh.bringToFront();
+        await gh.fill('input[name="otp"]', code);
+        gh.click('button[type="submit"]').catch(() => {});
+        await sleep(5000);
+
+        if (gh.url().includes('verified-device')) {
+            console.log('Code rejected');
+            await browser.close();
+            return;
+        }
+
+        // Upload avatar
+        await gh.goto('https://github.com/settings/profile', { waitUntil: 'domcontentloaded' });
+        await sleep(4000);
+
+        const avatar = await gh.$('img[src*="avatars.githubusercontent"]');
+        if (avatar) {
+            await avatar.click();
+            await sleep(2000);
+            const fi = await gh.$('input[type="file"]');
+            if (fi) { await fi.setInputFiles(AVATAR_PATH); await sleep(3000); console.log('Avatar uploaded!'); }
+        }
+
+        await gh.screenshot({ path: join(__dirname, '..', 'avatar-result.png') });
+    } finally {
+        await browser.close();
+    }
+})();
