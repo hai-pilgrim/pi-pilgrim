@@ -31,6 +31,9 @@
     ],
     "prompts": [
       "./src/prompts"
+    ],
+    "presets": [
+      "./src/presets"
     ]
   }
 }

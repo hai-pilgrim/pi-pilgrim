@@ -1,6 +1,8 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import sessionTheme from "./session-theme.js";
 import pushGuard from "./push-guard.js";
+import autoCommit from "./auto-commit.js";
+import pilgrimPresets from "./pilgrim-presets.js";
 
 export default function (pi: ExtensionAPI) {
 	// Each session gets its own theme (auto-assigned or persisted)
@@ -8,4 +10,10 @@ export default function (pi: ExtensionAPI) {
 
 	// Warn when leaving a repo with unpushed commits
 	pushGuard(pi);
+
+	// Auto-commit changes at the end of each turn
+	autoCommit(pi);
+
+	// PIlgrim presets: plan, implement, review, debug
+	pilgrimPresets(pi);
 }
