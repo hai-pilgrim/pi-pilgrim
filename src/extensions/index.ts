@@ -5,8 +5,12 @@ import autoCommit from "./auto-commit.js";
 import pilgrimPresets from "./pilgrim-presets.js";
 import pilgrimFooter from "./pilgrim-footer.js";
 import gitCheckpoint from "./git-checkpoint.js";
+import pilgrimWorking from "./pilgrim-working.js";
 
 export default function (pi: ExtensionAPI) {
+	// PIlgrim working indicator (pulsing dot in accent color)
+	pilgrimWorking(pi);
+
 	// PIlgrim footer: model, thinking, context %, branch
 	pilgrimFooter(pi);
 
